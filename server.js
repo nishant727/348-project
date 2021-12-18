@@ -13,7 +13,7 @@ app.use(bodyParser.json());
 app.use(express.static("public"));
 
 // init sqlite db
-const dbFile = "./.data/sqlite646.db";
+const dbFile = "./.data/sqlite1131.db";
 const exists = fs.existsSync(dbFile);
 const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database(dbFile);
@@ -26,21 +26,127 @@ try {
   console.error("Unable to connect to the database:", error);
 }
 
+class Category extends Model {}
+Category.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true
+    },
+    description: DataTypes.TEXT
+  },
+  { sequelize, modelName: "category" }
+);
+
+(async () => {
+  await sequelize.sync();
+  
+  try {
+    const ticket = await Category.build({
+      id: 0,
+      description: "Ticket"
+    });
+    console.log(ticket.toJSON());
+    await ticket.save();
+    console.log("Ticket was saved to the database!");
+  } catch (err) {
+    console.log(err);
+  }
+  
+  try {
+    const clothing = await Category.build({
+      id: 1,
+      description: "Clothing"
+    });
+    console.log(clothing.toJSON());
+    await clothing.save();
+    console.log("Clothing was saved to the database!");
+  }
+  catch (err) {
+    console.log(err);
+  }
+  
+  try {
+    const furniture = await Category.build({
+      id: 2,
+      description: "Furniture"
+    });
+    console.log(furniture.toJSON());
+    await furniture.save();
+    console.log("furniture was saved to the database!");
+  }
+  catch (err) {
+    console.log(err);
+  }
+  
+  try {
+    const dorm_buys = await Category.build({
+      id: 3,
+      description: "Dorm Buys"
+    });
+    console.log(dorm_buys.toJSON());
+    await dorm_buys.save();
+    console.log("Dorm Buy was saved to the database!");
+  }
+  catch (err) {
+    console.log(err);
+  }
+  
+  try {
+    const electronics = await Category.build({
+      id: 4,
+      description: "Electronics"
+    });
+    console.log(electronics.toJSON());
+    await electronics.save();
+    console.log("Electronic was saved to the database!");
+  }
+  catch (err) {
+    console.log(err);
+  }
+  
+  try {
+    const textbooks = await Category.build({
+      id: 5,
+      description: "Textbooks"
+    });
+    console.log(textbooks.toJSON());
+    await textbooks.save();
+    console.log("Textbook was saved to the database!");
+  }
+  catch (err) {
+    console.log(err);
+  }
+  
+  try {
+    const tutors = await Category.build({
+      id: 6,
+      description: "Tutor"
+    });
+    console.log(tutors.toJSON());
+    await tutors.save();
+    console.log("Tutor was saved to the database!");
+  }
+  catch (err) {
+    console.log(err);
+  }
+})();
+
 sequelize.sync();
 
 // if ./.data/sqlite.db does not exist, create it, otherwise print records to console
 db.serialize(() => {
   if (!exists) {
     db.run(
-      "CREATE TABLE Users (id INTEGER PRIMARY KEY AUTOINCREMENT, firstname TEXT, lastname TEXT, eadd TEXT, datejoined TEXT)"
+      "CREATE TABLE Items (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, description TEXT, price TEXT, contact TEXT, category int(22), datejoined TEXT)"
     );
-    console.log("New table Users created");
+    console.log("New table Items created");
   } else {
-    console.log('Database "Users" ready to go!');
+    console.log('Database "Items" ready to go!');
     //
     db.run(`PRAGMA read_uncommitted = 0`);
     // start indexes
-    db.run(`CREATE INDEX IF NOT EXISTS ind_one ON Users(id)`);
+    db.run(`CREATE INDEX IF NOT EXISTS ind_one ON Items(id)`);
     // end indexes
   }
 });
@@ -51,26 +157,30 @@ app.get("/", (request, response) => {
 });
 
 // endpoint to get all the user in the database
-app.get("/getUsers", (request, response) => {
-  db.all("SELECT * from Users", (err, rows) => {
+app.get("/getItems", (request, response) => {
+  db.all("SELECT * from Items", (err, rows) => {
     response.send(JSON.stringify(rows));
   });
 });
 
 // endpoint to add a user to the database
-app.post("/addUser", (request, response) => {
-  console.log(`add to users table ${request.body.user}`);
+app.post("/addItem", (request, response) => {
+  console.log(`@@@@@@@@@add to items table ${request.body.item}`);
   if (!process.env.DISALLOW_WRITE) {
-    const cleansedfirst = cleanseString(request.body.first);
-    const cleansedlast = cleanseString(request.body.last);
-    const cleansedeadd = cleanseString(request.body.eadd);
+    const cleansedtitle = cleanseString(request.body.title);
+    const cleanseddescription = cleanseString(request.body.description);
+    const cleansedprice = cleanseString(request.body.price);
+    const cleansedcontact = cleanseString(request.body.contact);
+    const cleansedcategory = cleanseString(request.body.category);
     const cleanseddate = cleanseString(request.body.date);
     db.run(`BEGIN TRANSACTION EXCLUSIVE;`);
     db.run(
-      `INSERT INTO Users (firstname, lastname, eadd, datejoined) VALUES (?,?,?,?)`,
-      cleansedfirst,
-      cleansedlast,
-      cleansedeadd,
+      `INSERT INTO Items (title, description, price, contact, category, datejoined) VALUES (?,?,?,?,?,?)`,
+      cleansedtitle,
+      cleanseddescription,
+      cleansedprice,
+      cleansedcontact,
+      cleansedcategory,
       cleanseddate,
       error => {
         if (error) {
@@ -83,6 +193,20 @@ app.post("/addUser", (request, response) => {
     db.run(`COMMIT;`);
   }
 });
+
+/////////
+app.post("/getByCategory", (request, response) => {
+  console.log(`search by category ${request.body.Category2}`);
+  const cleanCategory2 = cleanseString(request.body.Category2);
+  db.all(
+    `select * from Items where category ='${cleanCategory2}'`,
+    (err, rows) =>{
+      response.send(JSON.stringify(rows));
+      // console.log(rows);
+    }
+  );
+});
+/////////
 
 // helper function that prevents html/css/script malice
 const cleanseString = function(string) {

@@ -73,18 +73,3 @@ footer {
 .border-right {
   border-right: 1px solid black;
 }
-
-
-<style>
-body {
-  padding: 25px;
-  background-color: #ffe680;
-  color: black;
-  font-size: 25px;
-}
-
-.dark-mode {
-  background-color: #2e2d2a;
-  color: #ffe680;
-}
-</style>
